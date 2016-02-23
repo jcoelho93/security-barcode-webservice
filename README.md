@@ -1,4 +1,4 @@
-# QR Security Module
+# QR Code Security Module
 
 ### Functional Requirements
 
