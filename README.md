@@ -2,13 +2,13 @@
 
 ### Functional Requirements
 
-    + Module that outputs a QR Code given structured data.
-    + Enables financial applications to validate data in documents to prevent fraud.
-    + Allows parameterization to define which type of QR Code to generate.
+    1. Module that outputs a QR Code given structured data.
+    2. Enables financial applications to validate data in documents to prevent fraud.
+    3. Allows parameterization to define which type of QR Code to generate.
     
 ### Technical Requirements
 
-    + RESTful
-    + Documented using Swagger.
-    + Uses MongoDB.
-    + Packaged in Docker Containers
+    1. RESTful
+    2. Documented using Swagger.
+    3. Uses MongoDB.
+    4. Packaged in Docker Containers
