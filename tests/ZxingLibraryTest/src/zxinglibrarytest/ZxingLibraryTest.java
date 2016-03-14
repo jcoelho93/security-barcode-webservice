@@ -37,6 +37,8 @@ public class ZxingLibraryTest {
         *   Dummy data
         */
         JSONObject json = new JSONObject();
+        json.put("doc_id", 1);
+        json.put("doc_page", "3/5");
         json.put("nome", "José Camilo Fernandes Coelho");
         json.put("conta", "000700002696");
         json.put("montante", 143.30);
