@@ -11,14 +11,13 @@ import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.datamatrix.DataMatrixWriter;
-import com.google.zxing.datamatrix.encoder.SymbolShapeHint;
 import com.google.zxing.pdf417.PDF417Writer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 import org.json.simple.JSONObject;
@@ -43,7 +42,28 @@ public class ZxingLibraryTest {
         json.put("montante", 143.30);
         json.put("moeda", "EUR");
         
-        System.out.println(json.toString());
+        String data = json.toJSONString();
+        System.out.println("JSON" + data);
+        
+        /*
+        *   Hashing dummy data
+        */
+        try{
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(json.toJSONString().getBytes());
+            byte hash[] = md.digest();
+            // Hash bytes to Hex
+            StringBuffer buffer = new StringBuffer();
+            for(int i = 0;i< hash.length;i++){
+                buffer.append(Integer.toString((hash[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            data = buffer.toString();
+            System.out.println("Hash: " + data);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        
         
         /*
         *   Barcode Writers
@@ -62,16 +82,16 @@ public class ZxingLibraryTest {
         */
         Map qr_hints = new HashMap();
         qr_hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-        qr_hints.put(EncodeHintType.MARGIN,100);
+        qr_hints.put(EncodeHintType.MARGIN,5);
         
         /*
         *   Barcode encoding
         */
         try{
             
-            codes[0] = qr_writer.encode(json.toJSONString(), BarcodeFormat.QR_CODE, 150, 150, qr_hints);
-            codes[1] = dm_writer.encode(json.toJSONString(), BarcodeFormat.DATA_MATRIX, 150, 150);
-            codes[2] = pdf_writer.encode(json.toJSONString(), BarcodeFormat.PDF_417, 150, 150);
+            codes[0] = qr_writer.encode(data, BarcodeFormat.QR_CODE, 150, 150, qr_hints);
+            codes[1] = dm_writer.encode(data, BarcodeFormat.DATA_MATRIX, 150, 150);
+            codes[2] = pdf_writer.encode(data, BarcodeFormat.PDF_417, 150, 150);
             
         }catch(WriterException writer_e){
             writer_e.printStackTrace();
