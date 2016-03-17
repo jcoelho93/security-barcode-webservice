@@ -1,15 +1,11 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<title>Barcode Security Module</title>
-	<link rel="stylesheet" type="text/css" href="css/custom.css">
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-	<script type="text/javascript" src="js/script.js"></script>
+	<?php include 'inc/header.inc.php'; ?>	
 </head>
 <body>
 
-<?php include 'navbar.php'; ?>
+<?php include 'inc/navbar.inc.php'; ?>
 
 	<div class="container">
 		<div class="row">
@@ -18,10 +14,10 @@
 					<div class="col-lg-12">
 						<div class="well">
 							<h4>Algoritmo</h4>
-							<select class="form-control">
-								<option>SHA-256</option>
-								<option>AES</option>
-								<option>RSA</option>
+							<select class="form-control" name="algorithm">
+								<option value="sha">SHA-256</option>
+								<option value="aes">AES</option>
+								<option value="rsa">RSA</option>
 							</select>
 						</div>
 					</div>
@@ -36,7 +32,7 @@
 									<button type="button" class="btn btn-default" name="code-select" onclick="select(this)">PDF 417</button>
 								</div>
 								<div>
-									
+									<input type="hidden" value="qr" name="barcode-type" id="barcode-type" />
 								</div>
 						</div>
 					</div>
@@ -45,7 +41,10 @@
 					<div class="col-lg-12">
 						<div class="well">
 							<h4>Dados</h4>
-							<textarea placeholder="JSON{...}" class="form-control" rows="3"></textarea>
+							<textarea placeholder="JSON{...}" class="form-control" rows="3" id="input-data" maxlength="245"></textarea>
+							<div style="width:100%;text-align:right">
+								<small style="color:#666;"><span id="bytes-left">245</span> bytes</small>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -58,6 +57,9 @@
 			<div class="col-lg-8">
 				<div class="well">
 					<h4>Resultado</h4>
+					<div class="result-container">
+						<img src="img/qrcode.png" id="result" />
+					</div>
 				</div>
 			</div>
 		</div>
