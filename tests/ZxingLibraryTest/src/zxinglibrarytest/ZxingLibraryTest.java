@@ -6,20 +6,32 @@
 package zxinglibrarytest;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.Binarizer;
+import com.google.zxing.BinaryBitmap;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.Result;
 import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.datamatrix.DataMatrixWriter;
 import com.google.zxing.pdf417.PDF417Writer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import org.json.simple.JSONObject;
 
 /**
@@ -120,6 +132,34 @@ public class ZxingLibraryTest {
         }catch(IOException io_e){
             io_e.printStackTrace();
         }
+        
+        /*
+        *   Reading the barcode
+        */        
+        QRCodeReader reader = new QRCodeReader();
+        String file = "C:\\exictos-qrcode-module\\tests\\ZxingLibraryTest\\images\\qrcode.png";
+        BinaryBitmap binaryBitmap = null;
+        
+        /*
+        *   Create a binary bitmap from file
+        */
+        try {
+            binaryBitmap = new BinaryBitmap(new HybridBinarizer(new BufferedImageLuminanceSource(ImageIO.read(new FileInputStream(file)))));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        
+        Result res = null;
+        /*
+        *   Decode barcode
+        */
+        try{
+            res = reader.decode(binaryBitmap);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
+        System.out.println(res.getText());
         
     }
     
