@@ -1,0 +1,436 @@
+swagger: '2.0'
+#-----------------------------------------------------------------------------------------------#
+#                                        API DESCRIPTION                                        #
+#-----------------------------------------------------------------------------------------------#
+info:
+  version: "1.0.0"
+  title: Barcode security API
+  description: |
+    API for generating barcodes for use in financial applications and printing on financial documents.
+    
+    Currently supports the following barcodes:
+    * [QR Codes](https://en.wikipedia.org/wiki/QR_code)
+    * [Data Matrix](https://en.wikipedia.org/wiki/Data_Matrix)
+    * [PDF417](https://en.wikipedia.org/wiki/PDF417)
+    
+    Currently supports the following algorithms:
+    * [SHA-256](https://en.wikipedia.org/wiki/SHA-2)
+    * [AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+    * [RSA](https://en.wikipedia.org/wiki/RSA_%28cryptosystem%29)
+  contact:
+    name: |
+      José Coelho
+    url: www.exictos.com
+#-----------------------------------------------------------------------------------------------#
+#                              BASE PATH, SCHEME AND CONTENT TYPES                              #
+#-----------------------------------------------------------------------------------------------#
+basePath: /v1
+schemes:
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+#-----------------------------------------------------------------------------------------------#
+#                                              TAGS                                             #
+#-----------------------------------------------------------------------------------------------#
+tags:
+  - name: GET | Settings
+    description: |
+      **GET** operations for `setting` resource
+  - name: POST | Settings
+    description: |
+      **POST** operations for `setting` resource
+  - name: Other | Settings
+    description: |
+      **Other** operations for `setting` resource
+  - name: GET | Barcodes
+    description: | 
+      **GET** operations for `barcode` resource
+  - name: POST | Barcodes
+    description: |
+      **POST** operations for `barcode` resource
+  - name: Other | Barcodes
+    description: |
+      **Other** operations for `barcode` resource
+#-----------------------------------------------------------------------------------------------#
+#                                           PARAMETERS                                          #
+#-----------------------------------------------------------------------------------------------#
+parameters:
+  setting-id:
+    name: setting-id
+    in: path
+    description: The `Setting` identifier number
+    type: integer
+    format: int64
+    required: true
+  setting:
+    name: setting
+    in: body
+    description: The `Setting` object model
+    schema:
+      type: object
+      properties:
+        algorithm:
+          type: string
+          default: sha-256
+          enum:
+            - sha-256
+            - aes
+            - rsa
+        barcode:
+          $ref: '#/definitions/BarcodeParams'
+  data:
+    name: data
+    in: body
+    description: Data to be encrypted on the barcode
+    schema:
+      type: object
+      properties:
+        data:
+          type: string
+    required: true
+#-----------------------------------------------------------------------------------------------#
+#                                             PATHS                                             #
+#-----------------------------------------------------------------------------------------------#
+paths:
+  #» » » » » » » » » » SETTINGS PATH « « « « « « « « « «#
+  /settings:
+    get:
+      tags:
+        - GET | Settings
+      description: |
+        Gets `Setting` objects.
+        **Optional** query parameters:
+          
+        * **size** determines size of returned array
+        * **date** determines the date the resource was created
+        * **algorithm** determines the encryption algorithm used
+        * **barcode** determines the type of barcode used
+      produces:
+        - application/json
+      parameters:
+        - name: size
+          in: query
+          description: Size of returned array
+          required: false
+          type: integer
+          format: int32
+          minimum: 1
+        - name: date
+          in: query
+          description: Date of returned settings
+          required: false
+          type: string
+          format: date-time
+        - name: algorithm
+          in: query
+          description: Encryption algorithm used
+          required: false
+          type: string
+          default: sha-256
+          enum:
+            - sha-256
+            - aes
+            - rsa
+        - name: barcode
+          in: query
+          description: Type of barcode used
+          required: false
+          type: string
+          default: qr_code
+          enum:
+            - qr_code
+            - data_matrix
+            - pdf_417
+      responses:
+        200:
+          description: An array of settings
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Setting'
+        404:
+          description: No settings found
+    post:
+      tags:
+        - POST | Settings
+      description: |
+        Creates a new `Setting` object.
+      consumes:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/setting'
+      responses:
+        201:
+          description: Setting created
+          schema:
+            $ref: '#/definitions/Setting'
+        400:
+          description: The request can not be fullfilled due to bad sintax
+  /settings/{setting-id}:
+    get:
+      tags:
+        - GET | Settings
+      description: |
+        Gets information about a `Setting`.
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/setting-id'
+      responses:
+        200:
+          description: Successful response
+          schema:
+            $ref: '#/definitions/Setting'
+        404:
+          description: No such setting
+    put:
+      tags:
+        - Other | Settings
+      description: |
+        Replace a `Setting` resource
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/setting-id'
+        - $ref: '#/parameters/setting'
+      responses:
+        200:
+          description: Updated successfully
+          schema:
+            $ref: '#/definitions/Setting'
+        404:
+          description: No such setting
+    patch:
+      tags:
+        - Other | Settings
+      description: |
+        Update a `Setting` resource
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/setting-id'
+        - name: patch
+          in: body
+          description: |
+            Properties to be updated
+          schema:
+            type: object
+          required: true
+      responses:
+        200:
+          description: |
+            Updated successfully
+          schema:
+            $ref: '#/definitions/Setting'
+        400:
+          description: |
+            The request can not be fullfilled due to bad sintax
+        415:
+          description: |
+            Unsupported media type
+        422:
+          description: |
+            Unprocessable entity
+    delete:
+      description: |
+        Deletes this setting
+      parameters:
+        - $ref: '#/parameters/setting-id'
+      tags:
+        - Other | Settings
+      responses:
+        204:
+          description: Setting deleted
+        404:
+          description: No such setting
+  #» » » » » » » » » » BARCODE PATH « « « « « « « « « «#
+  /barcodes:
+    get:
+      tags:
+        - GET | Settings
+      description: |
+        Gets `Barcode` resources. **Optional** query parameters:
+          
+        * **size** determines size of returned array
+        * **date** determines the date the barcode was created
+        * **algorithm** determines the encryption algorithm used
+        * **barcode** determines the type of barcode
+      parameters:
+        - name: size
+          in: query
+          description: Size of returned array
+          required: false
+          type: integer
+          format: int32
+          minimum: 1
+        - name: date
+          in: query
+          description: Date of returned barcodes
+          required: false
+          type: string
+          format: date-time
+        - name: algorithm
+          in: query
+          description: Encryption algorithm used
+          required: false
+          type: string
+          default: sha-256
+          enum:
+            - sha-256
+            - aes
+            - rsa
+        - name: barcode
+          in: query
+          description: Type of barcode
+          required: false
+          type: string
+          default: qr_code
+          enum:
+            - qr_code
+            - data_matrix
+            - pdf_417
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Barcode'
+        404:
+          description: No barcodes found
+    post:
+      tags:
+        - POST | Barcode
+      description: |
+        Creates a new `Barcode` resource.
+      parameters:
+        - name: setting
+          in: query
+          description: |
+            `Setting` id to be used
+          type: integer
+          format: int64
+        - $ref: '#/parameters/data'
+      responses:
+        201:
+          description: Barcode created
+          schema:
+            $ref: '#/definitions/Barcode'
+        400:
+          description: The request can not be fullfilled due to bad sintax
+#-----------------------------------------------------------------------------------------------#
+#                                          DEFINITIONS                                          #
+#-----------------------------------------------------------------------------------------------#
+definitions:
+  #~~~~~~~~~~~~~~~~#
+  # Setting Model  #
+  #~~~~~~~~~~~~~~~~#
+  Setting:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      algorithm:
+        type: string
+      barcode:
+        $ref: '#/definitions/BarcodeParams'
+      created_at:
+        type: string
+        format: date-time
+      links:
+        type: array
+        items:
+          $ref: '#/definitions/HATEOASLinks'
+  #~~~~~~~~~~~~~~~~#
+  # Barcode Model  #
+  #~~~~~~~~~~~~~~~~#
+  Barcode:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      setting:
+        $ref: '#/definitions/Setting'
+      base64:
+        type: string
+        format: byte
+      created_at:
+        type: string
+        format: date-time
+      links:
+        type: array
+        items:
+          $ref: '#/definitions/HATEOASLinks'
+  #~~~~~~~~~~~~~~~~~~~~#
+  # Barcode Parameters #
+  #~~~~~~~~~~~~~~~~~~~~#
+  BarcodeParams:
+    description: Parameters available to customize barcodes, stored in setting models
+    type: object
+    properties:
+      type:
+        type: string
+        default: qr_code
+        enum:
+          - qr_code
+          - data_matrix
+          - pdf_417
+      width:
+        type: integer
+        format: int32
+        minimum: 1
+      height:
+        type: integer
+        format: int32
+        minimum: 1
+      margin:
+        type: integer
+        format: int32
+        minimum: 1
+      ecl:
+        type: string
+        default: h
+        enum:
+          - h
+          - l
+          - m
+          - q
+      version:
+        type: integer
+        format: int32
+      compact:
+        type: boolean
+      compaction:
+        type: string
+        default: auto
+        enum:
+          - auto
+          - byte
+          - numeric
+          - text
+      shape:
+        type: string
+        default: force_none
+        enum:
+          - force_none
+          - force_square
+          - force_rectangle
+  #~~~~~~~~~~~~~~~~#
+  # HATEOAS Links  #
+  #~~~~~~~~~~~~~~~~#
+  HATEOASLinks:
+    description: Links for implementing HATEOAS
+    type: object
+    properties:
+      href:
+        type: string
+      rel:
+        type: string
