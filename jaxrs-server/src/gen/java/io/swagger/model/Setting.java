@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.model.BarcodeParams;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 
 
 
@@ -14,8 +16,8 @@ import io.swagger.model.BarcodeParams;
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public class Setting   {
   
-
-
+    
+    
   public enum AlgorithmEnum {
     SHA_256("sha-256"),
     AES("aes"),

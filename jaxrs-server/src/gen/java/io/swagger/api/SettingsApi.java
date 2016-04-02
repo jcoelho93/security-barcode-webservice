@@ -84,7 +84,7 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No such setting", response = Setting.class) })
 
-    public Response settingsSettingIdGet(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") Long settingId,@Context SecurityContext securityContext)
+    public Response settingsSettingIdGet(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") String settingId,@Context SecurityContext securityContext)
     throws NotFoundException {
         return delegate.settingsSettingIdGet(settingId,securityContext);
     }
