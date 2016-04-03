@@ -42,7 +42,7 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No settings found", response = Setting.class, responseContainer = "List") })
 
-    public Response settingsGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned settings") @QueryParam("date") Date date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa", defaultValue="sha-256") @DefaultValue("sha-256") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode used", allowableValues="qr_code, data_matrix, pdf_417", defaultValue="qr_code") @DefaultValue("qr_code") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext)
+    public Response settingsGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned settings") @QueryParam("date") String date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode used", allowableValues="qr_code, data_matrix, pdf_417") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext)
     throws NotFoundException {
         return delegate.settingsGet(size,date,algorithm,barcode,securityContext);
     }

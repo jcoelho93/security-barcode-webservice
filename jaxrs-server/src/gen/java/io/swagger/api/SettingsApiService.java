@@ -22,7 +22,7 @@ import javax.ws.rs.core.SecurityContext;
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public abstract class SettingsApiService {
   
-      public abstract Response settingsGet(Integer size,Date date,String algorithm,String barcode,SecurityContext securityContext)
+      public abstract Response settingsGet(Integer size,String date,String algorithm,String barcode,SecurityContext securityContext)
       throws NotFoundException;
   
       public abstract Response settingsPost(Setting setting,SecurityContext securityContext)

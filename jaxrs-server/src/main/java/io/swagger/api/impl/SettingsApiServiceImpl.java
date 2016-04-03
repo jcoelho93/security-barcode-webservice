@@ -47,29 +47,42 @@ import org.bson.types.ObjectId;
 public class SettingsApiServiceImpl extends SettingsApiService {
     
     @Override
-    public Response settingsGet(Integer size, Date date, String algorithm, String barcode, SecurityContext securityContext)
+    public Response settingsGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext)
     throws NotFoundException {
         
         MongoClient mongoClient = new MongoClient("localhost", 27017);
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         
-        ArrayList<String> settings = new ArrayList();
+        //Defining query
+        FindIterable<Document> search = null;
         Document query = new Document();
+        if(date != null){
+            DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
+            Date new_date = null;
+            try{
+                new_date = date_format.parse(date);
+            }catch(Exception e){
+                return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Cannot parse date. Use dd-MM-yyyy")).build();
+            }
+            query.append("created_at", date_format.format(new_date));
+        }
+        if(algorithm != null){
+            query.append("algorithm",algorithm);
+        }
         
-        
-        FindIterable<Document> search = db.getCollection("settings").find(query);
+        if(size != null && size > 0){
+            search = db.getCollection("settings").find(query).limit(size);
+        }
+        if(size == null){
+            search = db.getCollection("settings").find(query);
+        }
         
         if(search == null){
-            return null;
-        }
-        for(Document current : search){
-            String tmp = "{id:" + "2";
-            tmp += ", algorithm:" + current.getString("algorithm");
-            tmp += ", created_at:" + current.getString("created_at");
-            settings.add(tmp);
+            return Response.serverError().build();
         }
         
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, settings.get(0))).build();
+        return Response.ok().entity(search).build();
+        
     }
     
     /*
@@ -98,7 +111,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         new_setting.append("algorithm", setting.getAlgorithm().toString());
         new_setting.append("barcode", barcode_params);
         
-        DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
         new_setting.append("created_at", date_format.format(date));
         new_setting.append("active", true);
