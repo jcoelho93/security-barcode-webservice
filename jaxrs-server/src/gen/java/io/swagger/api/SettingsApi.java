@@ -18,6 +18,7 @@ import java.io.InputStream;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -84,9 +85,9 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No such setting", response = Setting.class) })
 
-    public Response settingsSettingIdGet(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") String settingId,@Context SecurityContext securityContext)
+    public Response settingsSettingIdGet(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") String settingId,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
-        return delegate.settingsSettingIdGet(settingId,securityContext);
+        return delegate.settingsSettingIdGet(settingId,securityContext, request);
     }
     @PUT
     @Path("/{setting-id}")

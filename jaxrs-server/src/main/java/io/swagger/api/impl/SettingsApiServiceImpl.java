@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 
@@ -46,6 +47,16 @@ import org.bson.types.ObjectId;
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public class SettingsApiServiceImpl extends SettingsApiService {
     
+    /**
+     * Gets some or all settings matching a defined query
+     * @param size
+     * @param date
+     * @param algorithm
+     * @param barcode
+     * @param securityContext
+     * @return
+     * @throws NotFoundException 
+     */
     @Override
     public Response settingsGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext)
     throws NotFoundException {
@@ -56,6 +67,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         //Defining query
         FindIterable<Document> search = null;
         Document query = new Document();
+        // If client defined a date
         if(date != null){
             DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
             Date new_date = null;
@@ -66,10 +78,11 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             }
             query.append("created_at", date_format.format(new_date));
         }
+        // If client defined an algorithm
         if(algorithm != null){
             query.append("algorithm",algorithm);
         }
-        
+        // If client defined an array size
         if(size != null && size > 0){
             search = db.getCollection("settings").find(query).limit(size);
         }
@@ -77,20 +90,24 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             search = db.getCollection("settings").find(query);
         }
         
+        // If search fails return 500 error
         if(search == null){
             return Response.serverError().build();
         }
         
+        // Return query results
         return Response.ok().entity(search).build();
         
     }
     
-    /*
-    *
-    *   Stores a new setting in the database
-    *
-    */
-    
+    /**
+     * Creates a new setting and stores it in the DB
+     * 
+     * @param setting
+     * @param securityContext
+     * @return 
+     * @throws NotFoundException 
+     */    
     @Override
     public Response settingsPost(Setting setting, SecurityContext securityContext)
     throws NotFoundException {
@@ -101,13 +118,16 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("settings");
         
+        // New document to insert on DB
         Document new_setting = new Document();
+        // Map setting argument's barcode parameters to a document
         Map map = setting.getBarcode().toMap();
         Document barcode_params = new Document();
         for (Map.Entry entry : ((Set<Map.Entry>) map.entrySet())) {
             barcode_params.append(entry.getKey().toString(), entry.getValue());
         }
         
+        // Append key-values to the new document
         new_setting.append("algorithm", setting.getAlgorithm().toString());
         new_setting.append("barcode", barcode_params);
         
@@ -135,6 +155,8 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             Document doc = new_setting;
             List<Document> links = new ArrayList();
             links.add(new Document().append("rel", "self").append("href", "/v1/settings/" + id.toString()));
+            links.add(new Document().append("rel", "update").append("href", "/v1/settings/" + id.toString()));
+            links.add(new Document().append("rel", "delete").append("href", "/v1/settings/" + id.toString()));
             doc.append("links", links);
 
             resp = Response.created(u).status(201).cacheControl(cc).entity(doc);
@@ -153,11 +175,26 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }
     
+    /**
+     * Gets the setting with the requested ID
+     * @param settingId
+     * @param securityContext
+     * @param request
+     * @return
+     * @throws NotFoundException 
+     */
     @Override
-    public Response settingsSettingIdGet(String settingId, SecurityContext securityContext)
+    public Response settingsSettingIdGet(String settingId, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        mongoClient.setWriteConcern(WriteConcern.ACKNOWLEDGED);
+        
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        MongoCollection coll = db.getCollection("settings");
+        
+        
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "teste")).build();
     }
     
     @Override
