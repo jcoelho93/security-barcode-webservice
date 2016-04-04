@@ -24,6 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.*;
+import javax.ws.rs.core.UriInfo;
 
 @Path("/settings")
 @Consumes({ "application/json" })
@@ -43,9 +44,9 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No settings found", response = Setting.class, responseContainer = "List") })
 
-    public Response settingsGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned settings") @QueryParam("date") String date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode used", allowableValues="qr_code, data_matrix, pdf_417") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext)
+    public Response settingsGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned settings") @QueryParam("date") String date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode used", allowableValues="qr_code, data_matrix, pdf_417") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext, @Context UriInfo uriinfo)
     throws NotFoundException {
-        return delegate.settingsGet(size,date,algorithm,barcode,securityContext);
+        return delegate.settingsGet(size,date,algorithm,barcode,securityContext, uriinfo);
     }
     @POST
     
@@ -57,9 +58,9 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 400, message = "The request can not be fullfilled due to bad sintax", response = Setting.class) })
 
-    public Response settingsPost(@ApiParam(value = "The `Setting` object model" ) Setting setting,@Context SecurityContext securityContext)
+    public Response settingsPost(@ApiParam(value = "The `Setting` object model" ) Setting setting,@Context SecurityContext securityContext, @Context UriInfo uriinfo)
     throws NotFoundException {
-        return delegate.settingsPost(setting,securityContext);
+        return delegate.settingsPost(setting,securityContext, uriinfo);
     }
     @DELETE
     @Path("/{setting-id}")

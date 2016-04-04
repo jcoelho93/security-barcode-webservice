@@ -19,14 +19,15 @@ import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public abstract class SettingsApiService {
   
-      public abstract Response settingsGet(Integer size,String date,String algorithm,String barcode,SecurityContext securityContext)
+      public abstract Response settingsGet(Integer size,String date,String algorithm,String barcode,SecurityContext securityContext, UriInfo uriinfo)
       throws NotFoundException;
   
-      public abstract Response settingsPost(Setting setting,SecurityContext securityContext)
+      public abstract Response settingsPost(Setting setting,SecurityContext securityContext, UriInfo uriinfo)
       throws NotFoundException;
   
       public abstract Response settingsSettingIdDelete(Long settingId,SecurityContext securityContext)

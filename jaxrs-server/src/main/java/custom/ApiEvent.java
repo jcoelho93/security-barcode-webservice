@@ -7,7 +7,6 @@ package custom;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 import org.bson.Document;
 
@@ -15,7 +14,7 @@ import org.bson.Document;
  *
  * @author Camilo
  */
-class ApiEvent {
+public class ApiEvent {
 
     private String method;
     private String path;
@@ -70,5 +69,71 @@ class ApiEvent {
         doc.append("stack", this.stack);
         return doc;
     }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public Date getRequest_timestamp() {
+        return request_timestamp;
+    }
+
+    public void setRequest_timestamp(Date request_timestamp) {
+        this.request_timestamp = request_timestamp;
+    }
+
+    public int getResponse_http_code() {
+        return response_http_code;
+    }
+
+    public void setResponse_http_code(int response_http_code) {
+        this.response_http_code = response_http_code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getResponse_timestamp() {
+        return response_timestamp;
+    }
+
+    public void setResponse_timestamp(Date response_timestamp) {
+        this.response_timestamp = response_timestamp;
+    }
+
+    public String getStack() {
+        return stack;
+    }
+
+    public void setStack(String stack) {
+        this.stack = stack;
+    }
+    
+    
     
 }
