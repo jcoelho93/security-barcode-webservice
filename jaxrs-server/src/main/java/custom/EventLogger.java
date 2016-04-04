@@ -47,10 +47,10 @@ public class EventLogger {
         ObjectId id = event.toDocument().getObjectId("_id");
         
         if(id.toString() != null){
-            return true;
+            return false;
         }
         
-        return false;
+        return true;
         
     }
     
