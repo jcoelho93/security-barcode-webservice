@@ -9,6 +9,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 /**
@@ -43,8 +44,10 @@ public class EventLogger {
         MongoDatabase db = this.client.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("log");
         
-        coll.insertOne(event.toDocument());
-        ObjectId id = event.toDocument().getObjectId("_id");
+        Document doc = event.toDocument();
+        
+        coll.insertOne(doc);
+        ObjectId id = doc.getObjectId("_id");
         
         if(id.toString() != null){
             return false;

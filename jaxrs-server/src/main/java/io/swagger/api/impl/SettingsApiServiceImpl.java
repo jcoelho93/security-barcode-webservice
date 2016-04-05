@@ -78,8 +78,8 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             try{
                 new_date = date_format.parse(date);
             }catch(Exception e){
-                logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 400, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()),e.getStackTrace().toString()));
-                return Response.status(400).entity(new ApiResponseMessage(ApiResponseMessage.ERROR, "Cannot parse date. Use dd-MM-yyyy")).build();
+                logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 400, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
+                return Response.status(400).entity(new Document("message", "Cannot parse date. Use dd-MM-yyyy")).build();
             }
             query.append("created_at", date_format.format(new_date));
         }
@@ -98,12 +98,16 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         // If search fails return 500 error
         if(search == null){
             logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 500, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
-            return Response.serverError().entity("Unable to query database").build();
+            return Response.serverError().entity(new Document("message", "Unable to query database")).build();
+        }
+        if(search.first() == null){
+            //logger.log(new ApiEvent("GET", uriinfo., new Date(requestTime), 404, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Settings not found")).build();
         }
         
         // Return query results
         logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 200, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
-        return Response.ok().entity(search).build();
+        return Response.ok().entity(new Document("test", Util.getRequestUri(uriinfo))).build();
         
     }
     
@@ -174,7 +178,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             resp = Response.created(u).status(201).cacheControl(cc).entity(doc);
 
         }else{
-            resp = Response.status(400).entity("The request can not be fulfilled due to bad sintax");
+            resp = Response.status(400).entity(new Document("message", "The request can not be fulfilled due to bad sintax"));
         }
         
         return resp.build();
@@ -182,10 +186,10 @@ public class SettingsApiServiceImpl extends SettingsApiService {
     }
     
     @Override
-    public Response settingsSettingIdDelete(Long settingId, SecurityContext securityContext)
+    public Response settingsSettingIdDelete(Long settingId, SecurityContext securityContext, UriInfo uriinfo)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, Util.getRequestUri(uriinfo))).build();
     }
     
     /**
