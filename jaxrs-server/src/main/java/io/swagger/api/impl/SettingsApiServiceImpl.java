@@ -9,6 +9,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import com.mongodb.client.result.UpdateResult;
 import io.swagger.api.*;
 import io.swagger.model.*;
 
@@ -82,7 +83,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             try{
                 new_date = date_format.parse(date);
             }catch(Exception e){
-                logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 400, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
+                logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.BAD_REQUEST, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
                 return Response.status(400).entity(new Document("message", "Cannot parse date. Use dd-MM-yyyy")).build();
             }
             query.append("created_at", date_format.format(new_date));
@@ -108,16 +109,16 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         
         // If search fails return 500 error
         if(search == null){
-            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 500, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.SERVER_ERROR, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
             return Response.serverError().entity(new Document("message", "Unable to query database")).build();
         }
         if(search.first() == null){
-            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 404, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.NOT_FOUND, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
             return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Settings not found")).build();
         }
         
         // Return query results
-        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 200, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
         return Response.ok().entity(search).build();
         
     }
@@ -176,7 +177,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             try{
                 u = new URI(id.toString());
             }catch(Exception e){
-                logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 500, "Server Error", "HATEOAS URI bad syntax", new Date(System.currentTimeMillis()), null));
+                logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), ApiEvent.SERVER_ERROR, "Server Error", "HATEOAS URI bad syntax", new Date(System.currentTimeMillis()), null));
                 u = null;
             }
             Document doc = new_setting;
@@ -192,7 +193,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             resp = Response.status(400).entity(new Document("message", "The request can not be fulfilled due to bad sintax"));
         }
         
-        logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 201, "Created", "New setting created", new Date(System.currentTimeMillis()), null));
+        logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), ApiEvent.CREATED, "Created", "New setting created", new Date(System.currentTimeMillis()), null));
         return resp.build();
         
     }
@@ -200,6 +201,8 @@ public class SettingsApiServiceImpl extends SettingsApiService {
     @Override
     public Response settingsSettingIdDelete(String settingId, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
+        
+        long requestTime = System.currentTimeMillis();
         
         ObjectId id = new ObjectId(settingId);
         
@@ -209,10 +212,22 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("settings");
         
+        EventLogger logger = new EventLogger(mongoClient);
         
-        coll.updateOne(new Document("_id",id), new Document("$set", new Document("active", "false")));
+        UpdateResult result;
+        result = coll.updateOne(new Document("_id",id), new Document("$set", new Document("active", "false")));
         
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "")).build();
+        if(result.getModifiedCount() == 1){
+            logger.log(new ApiEvent("DELETE", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Setting was disabled", new Date(System.currentTimeMillis()), null));
+            Document entity = new Document();
+            entity.append("put", request.getRequestURI());
+            entity.append("settings", "/v1/settings");
+            return Response.ok().entity(entity).build();
+        }else{
+            logger.log(new ApiEvent("DELETE", request.getRequestURI(), new Date(requestTime), ApiEvent.NOT_FOUND, "Not found", "No setting was modified", new Date(System.currentTimeMillis()), null));
+            return Response.status(404).entity(new Document("settings", "/v1/settings")).build();
+        }
+        
     }
     
     /**
