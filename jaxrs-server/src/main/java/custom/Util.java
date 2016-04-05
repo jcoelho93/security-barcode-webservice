@@ -7,9 +7,14 @@ package custom;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
+import org.bson.Document;
 
 /**
  *
@@ -35,22 +40,25 @@ public class Util {
         
     }
     
-    public static String getRequestUri(UriInfo uri_info)
+    /**
+     * 
+     * Returns the request URI with query parameters [UNUSED]
+     * 
+     * @param request
+     * @return String
+     */
+    public static String getRequestUri(HttpServletRequest request)
     {
         
-        String basePath = uri_info.getAbsolutePath().getPath();
-        String queryParams = "";
+        String basePath = request.getRequestURI();
+        //String queryParams = "";
         
-        MultivaluedMap mvm = uri_info.getQueryParameters();
+        /**
+         *  Missing query parameters to string implementation 
+         */
+        //Map query = request.getParameterMap();
         
-        Iterator<String> i = mvm.keySet().iterator();
-        
-        while(i.hasNext()){
-            String key = (String)(i.next());
-            queryParams += key + "=" + mvm.getFirst(key) + "&";
-        }
-        
-        return basePath + "?";
+        return basePath;
         
     }
     

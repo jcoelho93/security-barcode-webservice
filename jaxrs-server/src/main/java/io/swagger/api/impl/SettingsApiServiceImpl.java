@@ -55,11 +55,12 @@ public class SettingsApiServiceImpl extends SettingsApiService {
      * @param algorithm
      * @param barcode
      * @param securityContext
+     * @param request
      * @return
      * @throws NotFoundException 
      */
     @Override
-    public Response settingsGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext, UriInfo uriinfo)
+    public Response settingsGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
         
         long requestTime = System.currentTimeMillis();
@@ -71,6 +72,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         FindIterable<Document> search = null;
         Document query = new Document();
         EventLogger logger = new EventLogger(mongoClient);
+        
         // If client defined a date
         if(date != null){
             DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
@@ -78,15 +80,22 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             try{
                 new_date = date_format.parse(date);
             }catch(Exception e){
-                logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 400, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
+                logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 400, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
                 return Response.status(400).entity(new Document("message", "Cannot parse date. Use dd-MM-yyyy")).build();
             }
             query.append("created_at", date_format.format(new_date));
         }
+        
         // If client defined an algorithm
         if(algorithm != null){
             query.append("algorithm",algorithm);
         }
+        
+        //If client defined a barcode type
+        if(barcode != null){
+            query.append("barcode.type", barcode);
+        }
+        
         // If client defined an array size
         if(size != null && size > 0){
             search = db.getCollection("settings").find(query).limit(size);
@@ -97,17 +106,17 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         
         // If search fails return 500 error
         if(search == null){
-            logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 500, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 500, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
             return Response.serverError().entity(new Document("message", "Unable to query database")).build();
         }
         if(search.first() == null){
-            //logger.log(new ApiEvent("GET", uriinfo., new Date(requestTime), 404, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 404, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
             return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Settings not found")).build();
         }
         
         // Return query results
-        logger.log(new ApiEvent("GET", uriinfo.getPath(), new Date(requestTime), 200, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
-        return Response.ok().entity(new Document("test", Util.getRequestUri(uriinfo))).build();
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), 200, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
+        return Response.ok().entity(search).build();
         
     }
     
@@ -120,7 +129,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
      * @throws NotFoundException 
      */    
     @Override
-    public Response settingsPost(Setting setting, SecurityContext securityContext, UriInfo uriinfo)
+    public Response settingsPost(Setting setting, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
 
         long requestTime = System.currentTimeMillis();
@@ -165,7 +174,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             try{
                 u = new URI(id.toString());
             }catch(Exception e){
-                logger.log(new ApiEvent("POST", uriinfo.getPath(), new Date(requestTime), 500, "Server Error", "HATEOAS URI bad syntax", new Date(System.currentTimeMillis()), null));
+                logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 500, "Server Error", "HATEOAS URI bad syntax", new Date(System.currentTimeMillis()), null));
                 u = null;
             }
             Document doc = new_setting;
@@ -181,6 +190,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             resp = Response.status(400).entity(new Document("message", "The request can not be fulfilled due to bad sintax"));
         }
         
+        logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 201, "Created", "New setting created", new Date(System.currentTimeMillis()), null));
         return resp.build();
         
     }
@@ -189,7 +199,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
     public Response settingsSettingIdDelete(Long settingId, SecurityContext securityContext, UriInfo uriinfo)
     throws NotFoundException {
         
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, Util.getRequestUri(uriinfo))).build();
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "")).build();
     }
     
     /**
