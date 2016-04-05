@@ -72,9 +72,9 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No such setting", response = void.class) })
 
-    public Response settingsSettingIdDelete(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") Long settingId,@Context SecurityContext securityContext, @Context UriInfo uriinfo)
+    public Response settingsSettingIdDelete(@ApiParam(value = "The `Setting` identifier number",required=true) @PathParam("setting-id") String settingId,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
-        return delegate.settingsSettingIdDelete(settingId,securityContext, uriinfo);
+        return delegate.settingsSettingIdDelete(settingId,securityContext, request);
     }
     @GET
     @Path("/{setting-id}")

@@ -137,7 +137,7 @@ public class ZxingLibraryTest {
         *   Reading the barcode
         */        
         QRCodeReader reader = new QRCodeReader();
-        String file = "C:\\exictos-qrcode-module\\tests\\ZxingLibraryTest\\images\\qrcode.png";
+        String file = "C:\\exictos-qrcode-module\\tests\\ZxingLibraryTest\\images\\teste.png";
         BinaryBitmap binaryBitmap = null;
         
         /*

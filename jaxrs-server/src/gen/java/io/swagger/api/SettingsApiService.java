@@ -30,7 +30,7 @@ public abstract class SettingsApiService {
       public abstract Response settingsPost(Setting setting,SecurityContext securityContext,  HttpServletRequest request)
       throws NotFoundException;
   
-      public abstract Response settingsSettingIdDelete(Long settingId,SecurityContext securityContext, UriInfo uriinfo)
+      public abstract Response settingsSettingIdDelete(String settingId,SecurityContext securityContext, HttpServletRequest request)
       throws NotFoundException;
   
       public abstract Response settingsSettingIdGet(String settingId,SecurityContext securityContext, HttpServletRequest request)

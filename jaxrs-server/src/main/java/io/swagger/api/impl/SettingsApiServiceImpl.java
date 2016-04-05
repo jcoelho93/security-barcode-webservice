@@ -71,6 +71,8 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         //Defining query
         FindIterable<Document> search = null;
         Document query = new Document();
+        query.append("active", "true");
+        
         EventLogger logger = new EventLogger(mongoClient);
         
         // If client defined a date
@@ -196,8 +198,19 @@ public class SettingsApiServiceImpl extends SettingsApiService {
     }
     
     @Override
-    public Response settingsSettingIdDelete(Long settingId, SecurityContext securityContext, UriInfo uriinfo)
+    public Response settingsSettingIdDelete(String settingId, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
+        
+        ObjectId id = new ObjectId(settingId);
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        mongoClient.setWriteConcern(WriteConcern.ACKNOWLEDGED);
+        
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        MongoCollection coll = db.getCollection("settings");
+        
+        
+        coll.updateOne(new Document("_id",id), new Document("$set", new Document("active", "false")));
         
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "")).build();
     }
