@@ -242,14 +242,31 @@ public class SettingsApiServiceImpl extends SettingsApiService {
     public Response settingsSettingIdGet(String settingId, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
         
+        long requestTime = System.currentTimeMillis();
+        
         MongoClient mongoClient = new MongoClient("localhost", 27017);
         mongoClient.setWriteConcern(WriteConcern.ACKNOWLEDGED);
         
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("settings");
         
+        Document query = new Document("_id", new ObjectId(settingId));
         
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "teste")).build();
+        FindIterable search = coll.find(query).limit(1);
+        
+        Document setting = (Document)search.first();
+        
+        List<Document> links = new ArrayList();
+        links.add(new Document().append("rel", "self").append("href", "/v1/settings/" + setting.get("_id")));
+        links.add(new Document().append("rel", "put").append("href", "/v1/settings/" + setting.get("_id")));
+        links.add(new Document().append("rel", "delete").append("href", "/v1/settings/" + setting.get("_id")));
+        
+        setting.append("links",links);
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Setting found", new Date(System.currentTimeMillis()), null));
+        
+        return Response.ok().entity(setting).build();
     }
     
     @Override
