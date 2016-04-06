@@ -13,7 +13,7 @@ public class AESEncryptor implements EncryptionInterface{
 
     public byte[] encrypt(String data)
     {
-        
+        return data.getBytes();
     }
     
     public String decrypt(byte[] data)

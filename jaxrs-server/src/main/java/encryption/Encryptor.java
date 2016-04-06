@@ -5,6 +5,9 @@
  */
 package encryption;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /**
  *
  * @author Camilo
@@ -54,10 +57,18 @@ public class Encryptor {
         
     }
     
-    public String hash(String data)
+    public String hash(String data) throws NoSuchAlgorithmException
     {
         
-        return data;
+        MessageDigest md = MessageDigest.getInstance("SHA256");
+        byte[] hash = md.digest(data.getBytes());
+        
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < hash.length; i++){
+            sb.append(Integer.toString((hash[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        
+        return sb.toString();
         
     }
     
