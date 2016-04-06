@@ -198,6 +198,16 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         
     }
     
+    /**
+     * 
+     * Disables the selected setting
+     * 
+     * @param settingId
+     * @param securityContext
+     * @param request
+     * @return
+     * @throws NotFoundException 
+     */
     @Override
     public Response settingsSettingIdDelete(String settingId, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
@@ -215,7 +225,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         EventLogger logger = new EventLogger(mongoClient);
         
         UpdateResult result;
-        result = coll.updateOne(new Document("_id",id), new Document("$set", new Document("active", "false")));
+        result = coll.updateOne(new Document("_id",id), new Document("$set", new Document("active", false)));
         
         if(result.getModifiedCount() == 1){
             logger.log(new ApiEvent("DELETE", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Setting was disabled", new Date(System.currentTimeMillis()), null));
@@ -269,11 +279,80 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         return Response.ok().entity(setting).build();
     }
     
+    /**
+     * 
+     * Updates the selected setting
+     * 
+     * @param settingId
+     * @param setting
+     * @param securityContext
+     * @param request
+     * @return
+     * @throws NotFoundException 
+     */
     @Override
-    public Response settingsSettingIdPut(Long settingId, Setting setting, SecurityContext securityContext)
+    public Response settingsSettingIdPut(String settingId, Setting setting, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        long requestTime = System.currentTimeMillis();
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        mongoClient.setWriteConcern(WriteConcern.ACKNOWLEDGED);
+        
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        MongoCollection coll = db.getCollection("settings");
+        
+        Document query = new Document("_id", new ObjectId(settingId));
+        
+        Document update = new Document();
+        //If client wants to change the algorithm
+        if(setting.getAlgorithm() != null){
+            update.append("algorithm", setting.getAlgorithm().toString());
+        }
+        // If client wants to disable the setting
+        if(!setting.isActive()){
+            update.append("active", false);
+        }
+        
+        // If client wants to change the barcode parameters
+        if(setting.getBarcode() != null){
+            
+            Document barcodeParams = new Document();
+            Map map = setting.getBarcode().toMap();
+            for (Map.Entry entry : ((Set<Map.Entry>) map.entrySet())) {
+                barcodeParams.append(entry.getKey().toString(), entry.getValue());
+            }
+            
+            update.append("barcode", barcodeParams);
+            
+        }        
+                
+        UpdateResult result;
+        result = coll.updateOne(query, new Document("$set", update));
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        
+        if(result.getModifiedCount() == 0){
+            logger.log(new ApiEvent("PUT", request.getRequestURI(), new Date(requestTime),404, "Not found", "No setting updated", new Date(System.currentTimeMillis()),null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message","No setting updated")).build();
+        }
+        
+        FindIterable updated = coll.find(new Document("_id", new ObjectId(settingId)));
+        
+        Document updated_setting = (Document)updated.first();
+        
+        // HATEOAS Links
+        List<Document> links = new ArrayList();
+        String id = updated_setting.get("_id").toString();
+        
+        links.add(new Document().append("rel", "self").append("href", "/v1/settings/" + id));
+        links.add(new Document().append("rel", "put").append("href", "/v1/settings/" + id));
+        links.add(new Document().append("rel", "delete").append("href", "/v1/settings/" + id));
+        
+        updated_setting.append("links", links);
+        
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Setting updated", new Date(System.currentTimeMillis()), null));
+        return Response.ok().entity(updated_setting).build();
     }
     
 }

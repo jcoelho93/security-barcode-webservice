@@ -38,7 +38,7 @@ public class Setting   {
 
   private AlgorithmEnum algorithm = AlgorithmEnum.SHA_256;
   private BarcodeParams barcode = null;
-
+  private boolean active = true;
   
   /**
    **/
@@ -75,7 +75,11 @@ public class Setting   {
     this.barcode = barcode;
   }
 
-  
+  @ApiModelProperty(value = "")
+  @JsonProperty("active")
+  public boolean isActive(){
+      return this.active;
+  }
 
   @Override
   public boolean equals(Object o) {
