@@ -58,7 +58,7 @@ public class SettingsApi  {
         
         @io.swagger.annotations.ApiResponse(code = 400, message = "The request can not be fullfilled due to bad sintax", response = Setting.class) })
 
-    public Response settingsPost(@ApiParam(value = "The `Setting` object model" ) Setting setting,@Context SecurityContext securityContext, @Context  HttpServletRequest request)
+    public Response settingsPost(@ApiParam(value = "The `Setting` object model" ) Setting setting,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
         return delegate.settingsPost(setting,securityContext, request);
     }

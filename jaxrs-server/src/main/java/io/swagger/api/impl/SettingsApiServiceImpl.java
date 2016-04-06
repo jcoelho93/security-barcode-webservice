@@ -31,18 +31,14 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -79,7 +75,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         // If client defined a date
         if(date != null){
             DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
-            Date new_date = null;
+            Date new_date;
             try{
                 new_date = date_format.parse(date);
             }catch(Exception e){
@@ -128,6 +124,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
      * 
      * @param setting
      * @param securityContext
+     * @param request
      * @return 
      * @throws NotFoundException 
      */    
@@ -166,7 +163,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         
         EventLogger logger = new EventLogger(mongoClient);
         
-        ResponseBuilder resp = null;
+        ResponseBuilder resp;
         
         if(id.toString() != null){
             CacheControl cc = new CacheControl();
