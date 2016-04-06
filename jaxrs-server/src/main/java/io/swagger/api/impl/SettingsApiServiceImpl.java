@@ -302,6 +302,8 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("settings");
         
+        EventLogger logger = new EventLogger(mongoClient);
+        
         Document query = new Document("_id", new ObjectId(settingId));
         
         Document update = new Document();
@@ -310,8 +312,11 @@ public class SettingsApiServiceImpl extends SettingsApiService {
             update.append("algorithm", setting.getAlgorithm().toString());
         }
         // If client wants to disable the setting
-        if(!setting.isActive()){
-            update.append("active", false);
+        if(setting.isActive()){
+            update.append("active", true);
+        }else{
+            logger.log(new ApiEvent("PUT", request.getRequestURI(), new Date(requestTime),404,"Method not allowed", "Use DELETE instead to disable setting",new Date(System.currentTimeMillis()),null));
+            return Response.status(404).entity(new Document("message","Use DELETE instead to disable setting")).build();
         }
         
         // If client wants to change the barcode parameters
@@ -329,8 +334,6 @@ public class SettingsApiServiceImpl extends SettingsApiService {
                 
         UpdateResult result;
         result = coll.updateOne(query, new Document("$set", update));
-        
-        EventLogger logger = new EventLogger(mongoClient);
         
         if(result.getModifiedCount() == 0){
             logger.log(new ApiEvent("PUT", request.getRequestURI(), new Date(requestTime),404, "Not found", "No setting updated", new Date(System.currentTimeMillis()),null));
