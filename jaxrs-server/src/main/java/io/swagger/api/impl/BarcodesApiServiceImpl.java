@@ -1,5 +1,8 @@
 package io.swagger.api.impl;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoDatabase;
 import io.swagger.api.*;
 import io.swagger.model.*;
 
@@ -16,9 +19,16 @@ import java.io.InputStream;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import custom.EventLogger;
+import encryption.AESEncryptor;
+import encryption.Encryptor;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import org.apache.commons.codec.binary.Hex;
+import org.bson.Document;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public class BarcodesApiServiceImpl extends BarcodesApiService {
@@ -26,8 +36,63 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
     @Override
     public Response barcodesGet(Integer size, Date date, String algorithm, String barcode, SecurityContext securityContext)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        long requestTime = System.currentTimeMillis();
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        
+        //Defining query
+        FindIterable<Document> search = null;
+        Document query = new Document();
+        query.append("active", "true");
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        
+        // If client defined a date
+        if(date != null){
+            DateFormat date_format = new SimpleDateFormat("dd-MM-yyyy");
+            Date new_date;
+            try{
+                new_date = date_format.parse(date);
+            }catch(Exception e){
+                logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.BAD_REQUEST, "Bad request", "Cannot parse date", new Date(System.currentTimeMillis()), Util.stackTraceToString(e)));
+                return Response.status(400).entity(new Document("message", "Cannot parse date. Use dd-MM-yyyy")).build();
+            }
+            query.append("created_at", date_format.format(new_date));
+        }
+        
+        // If client defined an algorithm
+        if(algorithm != null){
+            query.append("algorithm",algorithm);
+        }
+        
+        //If client defined a barcode type
+        if(barcode != null){
+            query.append("barcode.type", barcode);
+        }
+        
+        // If client defined an array size
+        if(size != null && size > 0){
+            search = db.getCollection("settings").find(query).limit(size);
+        }
+        if(size == null){
+            search = db.getCollection("settings").find(query);
+        }
+        
+        // If search fails return 500 error
+        if(search == null){
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.SERVER_ERROR, "Unable to query database", "Server was not able to query the database", new Date(System.currentTimeMillis()), null));
+            return Response.serverError().entity(new Document("message", "Unable to query database")).build();
+        }
+        if(search.first() == null){
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.NOT_FOUND, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Settings not found")).build();
+        }
+        
+        // Return query results
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
+        return Response.ok().entity(search).build();
     }
     
     @Override

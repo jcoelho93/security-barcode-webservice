@@ -15,6 +15,6 @@ public interface EncryptionInterface {
     
     public String decrypt(byte[] data);
     
-    public void generateKeys();
+    public String generateKeys();
     
 }

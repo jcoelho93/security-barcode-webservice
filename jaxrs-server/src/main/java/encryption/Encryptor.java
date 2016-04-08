@@ -7,6 +7,7 @@ package encryption;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.apache.commons.codec.binary.Hex;
 
 /**
  *
@@ -19,6 +20,11 @@ public class Encryptor {
     
     private String data;
     private byte[] encrypted;
+    
+    public Encryptor()
+    {
+        this.encryptor = null;
+    }
     
     public Encryptor(EncryptionInterface encryptor)
     {
@@ -41,6 +47,13 @@ public class Encryptor {
         
     }
     
+    /**
+     * 
+     * Encrypt data
+     * 
+     * @param data
+     * @return bytes
+     */
     public byte[] encrypt(String data)
     {
         this.data = data;
@@ -48,6 +61,13 @@ public class Encryptor {
         return this.encrypted;
     }
     
+    /**
+     * 
+     * Decrypt data
+     * 
+     * @param data
+     * @return String
+     */
     public String decrypt(byte[] data)
     {
         
@@ -57,18 +77,21 @@ public class Encryptor {
         
     }
     
+    /**
+     * 
+     * Hashing function for SHA-256 algorithm
+     * 
+     * @param data
+     * @return String
+     * @throws NoSuchAlgorithmException 
+     */
     public String hash(String data) throws NoSuchAlgorithmException
     {
         
         MessageDigest md = MessageDigest.getInstance("SHA256");
         byte[] hash = md.digest(data.getBytes());
         
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < hash.length; i++){
-            sb.append(Integer.toString((hash[i] & 0xff) + 0x100, 16).substring(1));
-        }
-        
-        return sb.toString();
+        return Hex.encodeHexString(hash);
         
     }
     
