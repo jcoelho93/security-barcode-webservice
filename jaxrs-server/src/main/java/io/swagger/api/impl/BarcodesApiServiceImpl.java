@@ -2,6 +2,7 @@ package io.swagger.api.impl;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import io.swagger.api.*;
 import io.swagger.model.*;
@@ -126,6 +127,17 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         
         EventLogger logger = new EventLogger(mongoClient);
         
+        Document settings = data.getSettings().toQuery();
+        MongoCollection settingsColl = db.getCollection("settings");
+        
+        FindIterable available_setting = settingsColl.find(settings).limit(1);
+        
+        if(available_setting.first() == null){
+            logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),400,"Bad Request", "These settings are not available",new Date(System.currentTimeMillis()),null));
+            return Response.status(Response.Status.BAD_REQUEST).entity(new Document("message","These settings are not available")).build();
+        }
+        
+
         String algorithm = data.getSettings().getAlgorithm();
         Encryptor encryptor = new Encryptor();
         String encryptedData = null;
@@ -142,6 +154,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         
         
         return Response.ok().entity(new Document("hash",encryptedData)).build();
+        
     }
     
 }
