@@ -146,7 +146,9 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         Map map = setting.getBarcode().toMap();
         Document barcode_params = new Document();
         for (Map.Entry entry : ((Set<Map.Entry>) map.entrySet())) {
-            barcode_params.append(entry.getKey().toString(), entry.getValue());
+            if(entry.getValue() != null){
+                barcode_params.append(entry.getKey().toString(), entry.getValue());
+            }
         }
         
         // Append key-values to the new document
