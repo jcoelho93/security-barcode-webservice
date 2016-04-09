@@ -68,7 +68,7 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         //Defining query
         FindIterable<Document> search = null;
         Document query = new Document();
-        query.append("active", "true");
+        query.append("active", true);
         
         EventLogger logger = new EventLogger(mongoClient);
         

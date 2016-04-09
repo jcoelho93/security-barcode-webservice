@@ -7,6 +7,8 @@ package encryption;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -32,25 +34,25 @@ public class AESEncryptor implements EncryptionInterface{
         try {
             cipher = Cipher.getInstance("AES");
         } catch (NoSuchAlgorithmException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         try {
             cipher.init(Cipher.ENCRYPT_MODE, this.key);
         } catch (InvalidKeyException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        byte[] cipherText;
+        byte[] cipherText = null;
         
         try {
             cipherText = cipher.doFinal(data.getBytes());
         } catch (IllegalBlockSizeException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return cipherText;
@@ -65,24 +67,25 @@ public class AESEncryptor implements EncryptionInterface{
         try {
             cipher = Cipher.getInstance("AES");
         } catch (NoSuchAlgorithmException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NoSuchPaddingException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         try {
             cipher.init(Cipher.DECRYPT_MODE, this.key);
         } catch (InvalidKeyException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        byte[] plainText;
+        byte[] plainText = null;
+        
         try {
             plainText = cipher.doFinal(data);
         } catch (IllegalBlockSizeException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
-            return null;
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return new String(plainText);
@@ -97,12 +100,18 @@ public class AESEncryptor implements EncryptionInterface{
             keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(128);
         } catch (NoSuchAlgorithmException ex) {
-            
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        SecretKey secretKey = null;
+        
+        if(keyGen != null){
+            secretKey = keyGen.generateKey();
         }
         
-        SecretKey secretKey = keyGen.generateKey();
-        
-        this.key = secretKey;
+        if(secretKey != null){
+            this.key = secretKey;
+        }
         
         return AESEncryptor.keyToString(secretKey);
         
@@ -118,6 +127,13 @@ public class AESEncryptor implements EncryptionInterface{
         return this.key;
     }
     
+    /**
+     * 
+     * Turns SecretKey to String for storage in DB
+     * 
+     * @param secretKey
+     * @return 
+     */
     public static String keyToString(SecretKey secretKey)
     {
         

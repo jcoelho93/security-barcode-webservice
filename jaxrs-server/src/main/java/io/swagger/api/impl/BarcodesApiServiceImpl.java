@@ -19,22 +19,24 @@ import java.io.InputStream;
 
 import com.sun.jersey.core.header.FormDataContentDisposition;
 import com.sun.jersey.multipart.FormDataParam;
+import custom.ApiEvent;
 import custom.EventLogger;
+import custom.Util;
 import encryption.AESEncryptor;
 import encryption.Encryptor;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
-import org.apache.commons.codec.binary.Hex;
 import org.bson.Document;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public class BarcodesApiServiceImpl extends BarcodesApiService {
     
     @Override
-    public Response barcodesGet(Integer size, Date date, String algorithm, String barcode, SecurityContext securityContext)
+    public Response barcodesGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
         
         long requestTime = System.currentTimeMillis();
@@ -45,7 +47,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         //Defining query
         FindIterable<Document> search = null;
         Document query = new Document();
-        query.append("active", "true");
+        query.append("active", true);
         
         EventLogger logger = new EventLogger(mongoClient);
         
@@ -64,20 +66,20 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         
         // If client defined an algorithm
         if(algorithm != null){
-            query.append("algorithm",algorithm);
+            query.append("setting.algorithm",algorithm);
         }
         
         //If client defined a barcode type
         if(barcode != null){
-            query.append("barcode.type", barcode);
+            query.append("setting.barcode.type", barcode);
         }
         
         // If client defined an array size
         if(size != null && size > 0){
-            search = db.getCollection("settings").find(query).limit(size);
+            search = db.getCollection("barcodes").find(query).limit(size);
         }
         if(size == null){
-            search = db.getCollection("settings").find(query);
+            search = db.getCollection("barcodes").find(query);
         }
         
         // If search fails return 500 error
@@ -86,13 +88,14 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
             return Response.serverError().entity(new Document("message", "Unable to query database")).build();
         }
         if(search.first() == null){
-            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.NOT_FOUND, "Not Found", "No settings found", new Date(System.currentTimeMillis()), null));
-            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Settings not found")).build();
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.NOT_FOUND, "Not Found", "No barcodes found", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message", "Barcodes not found")).build();
         }
         
         // Return query results
-        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Settings found", new Date(System.currentTimeMillis()), null));
+        logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Barcodes found", new Date(System.currentTimeMillis()), null));
         return Response.ok().entity(search).build();
+        
     }
     
     @Override
