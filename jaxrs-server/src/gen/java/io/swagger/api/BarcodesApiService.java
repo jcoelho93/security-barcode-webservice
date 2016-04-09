@@ -33,7 +33,7 @@ public abstract class BarcodesApiService {
       public abstract Response barcodesIdGet(Long id,SecurityContext securityContext)
       throws NotFoundException;
   
-      public abstract Response barcodesPost(InputData data,Long setting,SecurityContext securityContext)
+      public abstract Response barcodesPost(InputData data,SecurityContext securityContext, HttpServletRequest request)
       throws NotFoundException;
   
 }

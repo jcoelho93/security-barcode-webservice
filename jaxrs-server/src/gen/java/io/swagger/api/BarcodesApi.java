@@ -86,8 +86,8 @@ public class BarcodesApi  {
         
         @io.swagger.annotations.ApiResponse(code = 400, message = "The request can not be fullfilled due to bad sintax", response = Barcode.class) })
 
-    public Response barcodesPost(@ApiParam(value = "Data to be stored on barcode" ,required=true) InputData data,@ApiParam(value = "`Setting` id to be used") @QueryParam("setting") Long setting,@Context SecurityContext securityContext)
+    public Response barcodesPost(@ApiParam(value = "Data to be stored on barcode" ,required=true) InputData data,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
-        return delegate.barcodesPost(data,setting,securityContext);
+        return delegate.barcodesPost(data,securityContext,request);
     }
 }

@@ -24,8 +24,11 @@ import custom.EventLogger;
 import custom.Util;
 import encryption.AESEncryptor;
 import encryption.Encryptor;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
@@ -113,10 +116,32 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
     }
     
     @Override
-    public Response barcodesPost(InputData data, Long setting, SecurityContext securityContext)
+    public Response barcodesPost(InputData data, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        long requestTime = System.currentTimeMillis();
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        
+        String algorithm = data.getSettings().getAlgorithm();
+        Encryptor encryptor = new Encryptor();
+        String encryptedData = null;
+        
+        if(algorithm.equals("sha-256")){
+            try {
+                encryptedData = encryptor.hash(data.getData());
+            } catch (NoSuchAlgorithmException ex) {
+                logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),500,"Server Error", "No such algorithm exception", new Date(System.currentTimeMillis()),Util.stackTraceToString(ex)));
+                return Response.serverError().entity(new Document("stack",Util.stackTraceToString(ex))).build();
+            }
+        }
+        
+        
+        
+        return Response.ok().entity(new Document("hash",encryptedData)).build();
     }
     
 }
