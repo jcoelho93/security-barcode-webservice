@@ -15,6 +15,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
 
 /**
@@ -140,6 +142,32 @@ public class AESEncryptor implements EncryptionInterface{
         char[] hex;
         hex = Hex.encodeHex(secretKey.getEncoded());
         return String.valueOf(hex);
+        
+    }
+    
+    /**
+     * 
+     * Reconstruct key from String stored in DB
+     * 
+     * @param key
+     * @return SecretKey
+     */
+    public SecretKey stringToKey(String key)
+    {
+        
+        byte[] encoded = null;
+        
+        try {
+            encoded = Hex.decodeHex(key.toCharArray());
+        } catch (DecoderException ex) {
+            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        if(encoded != null){
+            this.key = new SecretKeySpec(encoded, "AES");
+        }
+
+        return this.key;
         
     }
     
