@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.model.BarcodeParams;
+import org.bson.Document;
 
 
 
@@ -93,5 +94,30 @@ public class InputDataSettings   {
     }
     return o.toString().replace("\n", "\n    ");
   }
+  
+  public Document toDocument()
+  {
+      
+      Document setting = new Document();
+      
+      setting.append("algorithm", this.getAlgorithm());
+      
+      Document barcode = new Document();
+      BarcodeParams params = this.getBarcode();
+      barcode.append("type", params.getType().toString());
+      barcode.append("width", params.getWidth());
+      barcode.append("height", params.getHeight());
+      barcode.append("margin", params.getMargin());
+      barcode.append("ecl", params.getEcl().toString());
+      barcode.append("compact", params.getCompact());
+      barcode.append("compaction", params.getCompaction().toString());
+      barcode.append("shape", params.getShape().toString());
+      
+      setting.append("barcode", params);
+      
+      return setting;
+      
+  }
+  
 }
 
