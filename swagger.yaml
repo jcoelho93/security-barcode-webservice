@@ -35,24 +35,12 @@ consumes:
 #                                              TAGS                                             #
 #-----------------------------------------------------------------------------------------------#
 tags:
-  - name: GET | Settings
+  - name: Settings
     description: |
-      **GET** operations for `setting` resource
-  - name: POST | Settings
-    description: |
-      **POST** operations for `setting` resource
-  - name: Other | Settings
-    description: |
-      **Other** operations for `setting` resource
-  - name: GET | Barcodes
+      Operations for `setting` resource
+  - name: Barcodes
     description: | 
-      **GET** operations for `barcode` resource
-  - name: POST | Barcodes
-    description: |
-      **POST** operations for `barcode` resource
-  - name: Other | Barcodes
-    description: |
-      **Other** operations for `barcode` resource
+      Operations for `barcode` resource
 #-----------------------------------------------------------------------------------------------#
 #                                           PARAMETERS                                          #
 #-----------------------------------------------------------------------------------------------#
@@ -80,16 +68,6 @@ parameters:
             - rsa
         barcode:
           $ref: '#/definitions/BarcodeParams'
-  data:
-    name: data
-    in: body
-    description: Data to be encrypted on the barcode
-    schema:
-      type: object
-      properties:
-        data:
-          type: string
-    required: true
 #-----------------------------------------------------------------------------------------------#
 #                                             PATHS                                             #
 #-----------------------------------------------------------------------------------------------#
@@ -98,7 +76,7 @@ paths:
   /settings:
     get:
       tags:
-        - GET | Settings
+        - Settings
       description: |
         Gets `Setting` objects.
         **Optional** query parameters:
@@ -154,7 +132,7 @@ paths:
           description: No settings found
     post:
       tags:
-        - POST | Settings
+        - Settings
       description: |
         Creates a new `Setting` object.
       consumes:
@@ -171,7 +149,7 @@ paths:
   /settings/{setting-id}:
     get:
       tags:
-        - GET | Settings
+        - Settings
       description: |
         Gets information about a `Setting`.
       produces:
@@ -187,7 +165,7 @@ paths:
           description: No such setting
     put:
       tags:
-        - Other | Settings
+        - Settings
       description: |
         Replace a `Setting` resource
       consumes:
@@ -204,46 +182,13 @@ paths:
             $ref: '#/definitions/Setting'
         404:
           description: No such setting
-    patch:
-      tags:
-        - Other | Settings
-      description: |
-        Update a `Setting` resource
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - $ref: '#/parameters/setting-id'
-        - name: patch
-          in: body
-          description: |
-            Properties to be updated
-          schema:
-            type: object
-          required: true
-      responses:
-        200:
-          description: |
-            Updated successfully
-          schema:
-            $ref: '#/definitions/Setting'
-        400:
-          description: |
-            The request can not be fullfilled due to bad sintax
-        415:
-          description: |
-            Unsupported media type
-        422:
-          description: |
-            Unprocessable entity
     delete:
       description: |
         Deletes this setting
       parameters:
         - $ref: '#/parameters/setting-id'
       tags:
-        - Other | Settings
+        - Settings
       responses:
         204:
           description: Setting deleted
@@ -253,7 +198,7 @@ paths:
   /barcodes:
     get:
       tags:
-        - GET | Settings
+        - Barcodes
       description: |
         Gets `Barcode` resources. **Optional** query parameters:
           
@@ -306,7 +251,7 @@ paths:
           description: No barcodes found
     post:
       tags:
-        - POST | Barcode
+        - Barcodes
       description: |
         Creates a new `Barcode` resource.
       parameters:
@@ -316,7 +261,13 @@ paths:
             `Setting` id to be used
           type: integer
           format: int64
-        - $ref: '#/parameters/data'
+        - name: data
+          in: body
+          description: |
+            Data to be stored on barcode
+          schema:
+            $ref: '#/definitions/InputData'
+          required: true
       responses:
         201:
           description: Barcode created
@@ -324,6 +275,47 @@ paths:
             $ref: '#/definitions/Barcode'
         400:
           description: The request can not be fullfilled due to bad sintax
+  /barcodes/{id}:
+    get:
+      tags:
+        - Barcodes
+      description: |
+        Gets the barcode.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The `Barcode` identifier number
+          type: integer
+          format: int64
+          required: true
+      responses:
+        200:
+          description: Barcode found
+          schema:
+            $ref: '#/definitions/Barcode'
+        404:
+          description: Barcode not found
+    delete:
+      tags:
+        - Barcodes
+      description: |
+        Deletes a barcode.
+      parameters:
+        - name: id
+          in: path
+          description: |
+            The `Barcode` identifier number
+          type: integer
+          format: int64
+          required: true
+      responses:
+        204:
+          description: |
+            Barcode deleted
+        404:
+          description: |
+            Barcode not found
 #-----------------------------------------------------------------------------------------------#
 #                                          DEFINITIONS                                          #
 #-----------------------------------------------------------------------------------------------#
@@ -434,3 +426,18 @@ definitions:
         type: string
       rel:
         type: string
+  #~~~~~~~~~~~~~~~~#
+  #   Input Data   #
+  #~~~~~~~~~~~~~~~~#
+  InputData:
+    type: object
+    properties:
+      data:
+        type: string
+      settings:
+        type: object
+        properties:
+          algorithm:
+            type: string
+          barcode:
+            $ref: '#/definitions/BarcodeParams'
