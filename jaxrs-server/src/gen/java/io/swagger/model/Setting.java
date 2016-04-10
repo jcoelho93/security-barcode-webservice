@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.model.BarcodeParams;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 
 
 

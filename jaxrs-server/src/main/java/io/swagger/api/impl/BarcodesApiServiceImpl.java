@@ -1,5 +1,7 @@
 package io.swagger.api.impl;
 
+import barcode.BarcodeGenerator;
+import com.google.zxing.WriterException;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
@@ -25,15 +27,20 @@ import custom.EventLogger;
 import custom.Util;
 import encryption.AESEncryptor;
 import encryption.Encryptor;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import org.apache.commons.codec.binary.Base64;
 import org.bson.Document;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
@@ -132,6 +139,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         
         FindIterable available_setting = settingsColl.find(settings).limit(1);
         
+        // Checks if the setting specified is available
         if(available_setting.first() == null){
             logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),400,"Bad Request", "These settings are not available",new Date(System.currentTimeMillis()),null));
             return Response.status(Response.Status.BAD_REQUEST).entity(new Document("message","These settings are not available")).build();
@@ -145,15 +153,43 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         if(algorithm.equals("sha-256")){
             try {
                 encryptedData = encryptor.hash(data.getData());
+                
             } catch (NoSuchAlgorithmException ex) {
                 logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),500,"Server Error", "No such algorithm exception", new Date(System.currentTimeMillis()),Util.stackTraceToString(ex)));
                 return Response.serverError().entity(new Document("stack",Util.stackTraceToString(ex))).build();
             }
         }
+
+        BarcodeGenerator generator = new BarcodeGenerator(data.getSettings());
+        BufferedImage imgBuffer = null;
         
+        try {
+            imgBuffer = generator.generateBarcode(encryptedData);
+        } catch (WriterException ex) {
+            logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),500,"Server Error", "WriterException while generating barcode", new Date(System.currentTimeMillis()),Util.stackTraceToString(ex)));
+            return Response.serverError().entity(new Document("message", "Error generating barcode")).build();
+        }
         
+        String base64 = "";
         
-        return Response.ok().entity(new Document("hash",encryptedData)).build();
+        if(imgBuffer != null){
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] imgBytes = null;
+            try {
+                ImageIO.write(imgBuffer, "png", output);
+                output.flush();
+                imgBytes = output.toByteArray();
+                output.close();
+            } catch (IOException ex) {
+                logger.log(new ApiEvent("POST",request.getRequestURI(),new Date(requestTime),500,"Server Error", "IOException while generating barcode", new Date(System.currentTimeMillis()),Util.stackTraceToString(ex)));
+                return Response.serverError().entity(new Document("message", "Error generating barcode")).build();
+            }
+            
+            base64 = Base64.encodeBase64String(imgBytes);
+            
+        }
+        
+        return Response.ok().entity(new Document("hash",encryptedData).append("base64", base64)).build();
         
     }
     
