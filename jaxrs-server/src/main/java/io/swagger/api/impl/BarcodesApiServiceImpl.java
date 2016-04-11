@@ -151,8 +151,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         String algorithm = data.getSettings().getAlgorithm();
         Encryptor encryptor = new Encryptor();
         String encryptedData = null;
-        String privateKey;
-        String publicKey;
+        String privateKey = null;
         
         if(algorithm.equals("aes")){
             
@@ -207,7 +206,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
             
         }
         
-        return Response.ok().entity(new Document("hash",encryptedData).append("base64", base64)).build();
+        return Response.ok().entity(new Document("encryptedData",encryptedData).append("base64", base64).append("key",privateKey)).build();
         
     }
     
