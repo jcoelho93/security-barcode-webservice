@@ -5,6 +5,9 @@
  */
 package encryption;
 
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+
 /**
  *
  * @author Camilo
@@ -13,7 +16,7 @@ public interface EncryptionInterface {
 
     public byte[] encrypt(String data);
     
-    public String decrypt(byte[] data);
+    public String decrypt(byte[] data, Key private_key);
     
     public String generateKeys();
     

@@ -27,6 +27,7 @@ import custom.EventLogger;
 import custom.Util;
 import encryption.AESEncryptor;
 import encryption.Encryptor;
+import encryption.RSAEncryptor;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.bson.Document;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
@@ -149,8 +151,24 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         String algorithm = data.getSettings().getAlgorithm();
         Encryptor encryptor = new Encryptor();
         String encryptedData = null;
+        String privateKey;
+        String publicKey;
         
-        if(algorithm.equals("sha-256")){
+        if(algorithm.equals("aes")){
+            
+            encryptor.setEncryptorClass(new AESEncryptor());
+            privateKey = encryptor.getEncryptor().generateKeys();
+            
+            encryptedData = Hex.encodeHexString(encryptor.encrypt(data.getData()));
+
+        }else if(algorithm.equals("rsa")){
+            
+            encryptor.setEncryptorClass(new RSAEncryptor());
+            privateKey = encryptor.getEncryptor().generateKeys();
+            
+            encryptedData = Hex.encodeHexString(encryptor.encrypt(data.getData()));
+            
+        }else{
             try {
                 encryptedData = encryptor.hash(data.getData());
                 

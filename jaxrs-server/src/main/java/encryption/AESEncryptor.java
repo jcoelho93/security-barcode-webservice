@@ -5,7 +5,10 @@
  */
 package encryption;
 
+import custom.ApiEvent;
+import custom.EventLogger;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,7 +28,7 @@ import org.apache.commons.codec.binary.Hex;
  */
 public class AESEncryptor implements EncryptionInterface{
 
-    private static final String algorithm = "AES";
+    private static final String ALGORITHM = "AES";
     
     private SecretKey key;
     
@@ -50,7 +53,9 @@ public class AESEncryptor implements EncryptionInterface{
         byte[] cipherText = null;
         
         try {
+            
             cipherText = cipher.doFinal(data.getBytes());
+            
         } catch (IllegalBlockSizeException ex) {
             Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (BadPaddingException ex) {
@@ -61,9 +66,9 @@ public class AESEncryptor implements EncryptionInterface{
         
     }
     
-    public String decrypt(byte[] data)
+    public String decrypt(byte[] data, Key key)
     {
-        
+
         Cipher cipher = null;
         
         try {
@@ -96,21 +101,24 @@ public class AESEncryptor implements EncryptionInterface{
     
     public String generateKeys()
     {
+        
         KeyGenerator keyGen = null;
         
         try {
+            
             keyGen = KeyGenerator.getInstance("AES");
             keyGen.init(128);
+            
         } catch (NoSuchAlgorithmException ex) {
-            Logger.getLogger(AESEncryptor.class.getName()).log(Level.SEVERE, null, ex);
+            
         }
-
+        
         SecretKey secretKey = null;
         
         if(keyGen != null){
             secretKey = keyGen.generateKey();
         }
-        
+            
         if(secretKey != null){
             this.key = secretKey;
         }
@@ -121,7 +129,7 @@ public class AESEncryptor implements EncryptionInterface{
     
     public String getAlgorithm()
     {
-        return AESEncryptor.algorithm;
+        return AESEncryptor.ALGORITHM;
     }
     
     public SecretKey getKey()
@@ -136,7 +144,7 @@ public class AESEncryptor implements EncryptionInterface{
      * @param secretKey
      * @return 
      */
-    public static String keyToString(SecretKey secretKey)
+    private static String keyToString(SecretKey secretKey)
     {
         
         char[] hex;

@@ -5,6 +5,7 @@
  */
 package encryption;
 
+import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.apache.commons.codec.binary.Hex;
@@ -68,11 +69,11 @@ public class Encryptor {
      * @param data
      * @return String
      */
-    public String decrypt(byte[] data)
+    public String decrypt(byte[] data, Key key)
     {
         
         this.encrypted = data;
-        this.data = this.encryptor.decrypt(data);
+        this.data = this.encryptor.decrypt(data, key);
         return this.data;
         
     }
