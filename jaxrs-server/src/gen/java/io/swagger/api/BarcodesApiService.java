@@ -27,10 +27,10 @@ public abstract class BarcodesApiService {
       public abstract Response barcodesGet(Integer size,String date,String algorithm,String barcode,SecurityContext securityContext, HttpServletRequest request)
       throws NotFoundException;
   
-      public abstract Response barcodesIdDelete(Long id,SecurityContext securityContext)
+      public abstract Response barcodesIdDelete(String id,SecurityContext securityContext, HttpServletRequest request)
       throws NotFoundException;
   
-      public abstract Response barcodesIdGet(Long id,SecurityContext securityContext)
+      public abstract Response barcodesIdGet(String id,SecurityContext securityContext,HttpServletRequest request)
       throws NotFoundException;
   
       public abstract Response barcodesPost(InputData data,SecurityContext securityContext, HttpServletRequest request)

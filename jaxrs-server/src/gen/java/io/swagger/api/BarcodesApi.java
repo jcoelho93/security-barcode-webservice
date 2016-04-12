@@ -58,9 +58,9 @@ public class BarcodesApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "Barcode not found", response = void.class) })
 
-    public Response barcodesIdDelete(@ApiParam(value = "The `Barcode` identifier number",required=true) @PathParam("id") Long id,@Context SecurityContext securityContext)
+    public Response barcodesIdDelete(@ApiParam(value = "The `Barcode` identifier number",required=true) @PathParam("id") String id,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
-        return delegate.barcodesIdDelete(id,securityContext);
+        return delegate.barcodesIdDelete(id,securityContext,request);
     }
     @GET
     @Path("/{id}")
@@ -72,9 +72,9 @@ public class BarcodesApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "Barcode not found", response = Barcode.class) })
 
-    public Response barcodesIdGet(@ApiParam(value = "The `Barcode` identifier number",required=true) @PathParam("id") Long id,@Context SecurityContext securityContext)
+    public Response barcodesIdGet(@ApiParam(value = "The `Barcode` identifier number",required=true) @PathParam("id") String id,@Context SecurityContext securityContext, @Context HttpServletRequest request)
     throws NotFoundException {
-        return delegate.barcodesIdGet(id,securityContext);
+        return delegate.barcodesIdGet(id,securityContext,request);
     }
     @POST
     
