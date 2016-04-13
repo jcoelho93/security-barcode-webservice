@@ -19,6 +19,9 @@ $(document).ready(function(){
 			btns[2].style.backgroundColor = WHITE;
 			btns[2].style.color = GRAY;
 			input.value = "qr";
+			document.getElementById('qr-code-params').style.display = "block";
+			document.getElementById('data-matrix-params').style.display = "none";
+			document.getElementById('pdf-417-params').style.display = "none";
 		}
 		if(btns[1] == obj){
 			btns[0].style.backgroundColor = WHITE;
@@ -28,6 +31,9 @@ $(document).ready(function(){
 			btns[2].style.backgroundColor = WHITE;
 			btns[2].style.color = GRAY;
 			input.value = "dm";
+			document.getElementById('qr-code-params').style.display = "none";
+			document.getElementById('data-matrix-params').style.display = "block";
+			document.getElementById('pdf-417-params').style.display = "none";
 		}
 		if(btns[2] == obj){
 			btns[0].style.backgroundColor = WHITE;
@@ -37,6 +43,9 @@ $(document).ready(function(){
 			btns[2].style.backgroundColor = BLUE;
 			btns[2].style.color = WHITE;
 			input.value = "pdf";
+			document.getElementById('qr-code-params').style.display = "none";
+			document.getElementById('data-matrix-params').style.display = "none";
+			document.getElementById('pdf-417-params').style.display = "block";
 		}
 
 	}

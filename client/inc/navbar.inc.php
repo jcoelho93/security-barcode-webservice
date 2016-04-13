@@ -9,7 +9,7 @@
 			<li><a href="index.php">Gerar</a></li>
 			<li><a href="history.php">Histórico</a></li>
 			<li><a href="#">Ler documento</a></li>
-			<li><a href="#">Parametrização</a></li>
+			<li><a href="settings.php">Parametrização</a></li>
 		</ul>
 		</div>
 	</div>
