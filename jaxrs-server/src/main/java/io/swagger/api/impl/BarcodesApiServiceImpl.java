@@ -6,6 +6,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.UpdateResult;
 import io.swagger.api.*;
 import io.swagger.model.*;
 
@@ -31,19 +32,23 @@ import encryption.RSAEncryptor;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.CacheControl;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 @javax.annotation.Generated(value = "class io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2016-04-01T17:42:32.367Z")
 public class BarcodesApiServiceImpl extends BarcodesApiService {
@@ -112,17 +117,66 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
     }
     
     @Override
-    public Response barcodesIdDelete(Long id, SecurityContext securityContext)
+    public Response barcodesIdDelete(String id, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        long requestTime = System.currentTimeMillis();
+        
+        ObjectId objId = new ObjectId(id);
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        
+        Document query = new Document("_id", objId);
+        
+        UpdateResult results;
+        
+        results = db.getCollection("barcodes").updateOne(query, new Document("$set",new Document("active", false)));
+        
+        if(results.getModifiedCount() != 1){
+            logger.log(new ApiEvent("DELETE", request.getRequestURI(), new Date(requestTime),404,"Not found", "No barcode found", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message","No barcode found")).build();
+        }
+        
+        logger.log(new ApiEvent("DELETE", request.getRequestURI(), new Date(requestTime),200, "OK", "Barcode deleted", new Date(System.currentTimeMillis()),null));
+        return Response.ok().entity(new Document("barcodes", "/v1/barcodes")).build();
+        
     }
     
     @Override
-    public Response barcodesIdGet(Long id, SecurityContext securityContext)
+    public Response barcodesIdGet(String id, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+        
+        long requestTime = System.currentTimeMillis();
+        
+        ObjectId objId = new ObjectId(id);
+        
+        MongoClient mongoClient = new MongoClient("localhost", 27017);
+        MongoDatabase db = mongoClient.getDatabase("barcodes");
+        
+        EventLogger logger = new EventLogger(mongoClient);
+        
+        Document query = new Document("_id", objId);
+        
+        FindIterable foundBarcode = db.getCollection("barcodes").find(query).limit(1);
+        
+        if(foundBarcode.first() == null){
+            logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime),404,"Not found", "No barcode found", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.NOT_FOUND).entity(new Document("message","No barcode found")).build();
+        }
+        
+        Document barcode = (Document)foundBarcode.first();
+        
+        List<Document> links = new ArrayList();
+        links.add(new Document("rel","self").append("href","/v1/barcodes/" + objId.toHexString()));
+        links.add(new Document("rel","delete").append("href","/v1/barcodes/" + objId.toHexString()));
+        
+        barcode.append("links",links);
+        
+        return Response.ok().entity(barcode).build();
+        
     }
     
     @Override
@@ -190,6 +244,8 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         String base64 = "";
         
         if(imgBuffer != null){
+            
+            // Image to Base64
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             byte[] imgBytes = null;
             try {
@@ -206,7 +262,34 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
             
         }
         
-        return Response.ok().entity(new Document("encryptedData",encryptedData).append("base64", base64).append("key",privateKey)).build();
+        Document newBarcode = new Document("settings", data.getSettings().toDocument());
+        newBarcode.append("base64", base64);
+        newBarcode.append("key", privateKey);
+        
+        DateFormat format = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        newBarcode.append("created_at", format.format(new Date(System.currentTimeMillis())));
+        
+        newBarcode.append("active", true);
+        
+        db.getCollection("barcodes").insertOne(newBarcode);
+        ObjectId newBarcodeId = newBarcode.getObjectId("_id");
+        
+        if(newBarcodeId.toHexString() != null){
+
+            List<Document> links = new ArrayList();
+            links.add(new Document().append("rel", "self").append("href", "/v1/barcodes/" + newBarcodeId.toHexString()));
+            links.add(new Document().append("rel", "update").append("href", "/v1/barcodes/" + newBarcodeId.toHexString()));
+            links.add(new Document().append("rel", "delete").append("href", "/v1/barcodes/" + newBarcodeId.toHexString()));
+            
+            newBarcode.append("links", links);
+            
+            logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 201, "Created", "Barcode created", new Date(System.currentTimeMillis()), null));
+            return Response.status(Response.Status.CREATED).entity(newBarcode).build();
+            
+        }else{
+            logger.log(new ApiEvent("POST", request.getRequestURI(), new Date(requestTime), 400, "Bad request", "Barcode was not created", new Date(System.currentTimeMillis()),null));
+            return Response.status(400).entity(new Document("message", "The request can not be fulfilled due to bad sintax")).build();
+        }
         
     }
     

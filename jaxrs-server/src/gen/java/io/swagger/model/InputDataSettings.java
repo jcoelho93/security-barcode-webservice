@@ -103,16 +103,35 @@ public class InputDataSettings   {
       Document setting = new Document();
       
       setting.append("algorithm", this.getAlgorithm());
-      
-      Document barcode = new Document();
      
       Map map = this.getBarcode().toMap();
-      Document barcode_params = new Document();
+
       for (Map.Entry entry : ((Set<Map.Entry>) map.entrySet())) {
           if(entry.getValue() != null){
               setting.append("barcode." + entry.getKey().toString(), entry.getValue());
           }
       }
+      
+      return setting;
+      
+  }
+
+  public Document toDocument()
+  {
+      
+      Document setting = new Document();
+      
+      setting.append("algorithm", this.getAlgorithm());
+     
+      Map map = this.getBarcode().toMap();
+      Document barcodeParams = new Document();
+      for (Map.Entry entry : ((Set<Map.Entry>) map.entrySet())) {
+          if(entry.getValue() != null){
+              barcodeParams.append(entry.getKey().toString(), entry.getValue());
+          }
+      }
+      
+      setting.append("barcode",barcodeParams);
       
       return setting;
       
