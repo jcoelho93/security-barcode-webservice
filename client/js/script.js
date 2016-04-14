@@ -18,7 +18,7 @@ $(document).ready(function(){
 			btns[1].style.color = GRAY;
 			btns[2].style.backgroundColor = WHITE;
 			btns[2].style.color = GRAY;
-			input.value = "qr";
+			input.value = "qr_code";
 			document.getElementById('qr-code-params').style.display = "block";
 			document.getElementById('data-matrix-params').style.display = "none";
 			document.getElementById('pdf-417-params').style.display = "none";
@@ -30,7 +30,7 @@ $(document).ready(function(){
 			btns[1].style.color = WHITE;
 			btns[2].style.backgroundColor = WHITE;
 			btns[2].style.color = GRAY;
-			input.value = "dm";
+			input.value = "data_matrix";
 			document.getElementById('qr-code-params').style.display = "none";
 			document.getElementById('data-matrix-params').style.display = "block";
 			document.getElementById('pdf-417-params').style.display = "none";
@@ -42,7 +42,7 @@ $(document).ready(function(){
 			btns[1].style.color = GRAY;
 			btns[2].style.backgroundColor = BLUE;
 			btns[2].style.color = WHITE;
-			input.value = "pdf";
+			input.value = "pdf_417";
 			document.getElementById('qr-code-params').style.display = "none";
 			document.getElementById('data-matrix-params').style.display = "none";
 			document.getElementById('pdf-417-params').style.display = "block";

@@ -9,13 +9,14 @@
 
 	<div class="container">
 		<div class="row">
+		<form action="app/get_barcode.php" method="post">
 			<div class="col-lg-4">
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="well">
 							<h4>Algoritmo</h4>
 							<select class="form-control" name="algorithm">
-								<option value="sha">SHA-256</option>
+								<option value="sha-256">SHA-256</option>
 								<option value="aes">AES</option>
 								<option value="rsa">RSA</option>
 							</select>
@@ -33,19 +34,19 @@
 								</div>
 								<br /><br />
 								<div>
-									<input type="hidden" value="qr" name="barcode-type" id="barcode-type" />
+									<input type="hidden" value="qr_code" name="barcode-type" id="barcode-type" />
 									<table width="100%">
 										<tr>
 											<td><label>Largura (px):</label></td>
-											<td><input type="number" placeholder="150" class="form-control" /></td>
+											<td><input type="number" placeholder="150" class="form-control" name="width" /></td>
 										</tr>
 										<tr>
 											<td><label>Altura (px):</label></td>
-											<td><input type="number" placeholder="150" class="form-control" /></td>
+											<td><input type="number" placeholder="150" class="form-control" name="height" /></td>
 										</tr>
 										<tr>
 											<td><label>Margem (px):</label></td>
-											<td><input type="number" placeholder="3" class="form-control" /></td>
+											<td><input type="number" placeholder="3" class="form-control" name="margin" /></td>
 										</tr>
 									</table>
 									<div id="qr-code-params">
@@ -60,7 +61,7 @@
 									<div id="data-matrix-params" style="display:none">
 										<h5>Forma:</h5>
 										<select class="form-control" name="shape">
-											<option value="force_none">Auto</option>
+											<option value="force_none" selected="selected">Auto</option>
 											<option value="force_square">Quadrado</option>
 											<option value="force_rectangle">Rectangulo</option>
 										</select>
@@ -68,7 +69,7 @@
 									<div id="pdf-417-params" style="display:none">
 										<h5>Compacto:</h5>
 										<label class="radio-inline">
-											<input type="radio" name="compact" value="true"> Sim
+											<input type="radio" name="compact" value="true" checked> Sim
 										</label>
 										<label class="radio-inline">
 											<input type="radio" name="compact" value="false"> Não
@@ -89,7 +90,7 @@
 					<div class="col-lg-12">
 						<div class="well">
 							<h4>Dados</h4>
-							<textarea placeholder="JSON{...}" class="form-control" rows="3" id="input-data" maxlength="245"></textarea>
+							<textarea placeholder="JSON{...}" class="form-control" rows="3" id="input-data" maxlength="245" name="input-data"></textarea>
 							<div style="width:100%;text-align:right">
 								<small style="color:#666;"><span id="bytes-left">245</span> bytes</small>
 							</div>
@@ -98,7 +99,7 @@
 				</div>
 				<div class="row">
 					<div class="col-lg-12">
-						<button class="btn btn-primary">Gerar</button>
+						<input type="submit" class="btn btn-primary" value="Gerar" />
 					</div>
 				</div>
 			</div>
@@ -106,10 +107,18 @@
 				<div class="well">
 					<h4>Resultado</h4>
 					<div class="result-container">
-						<img src="img/qrcode.png" id="result" />
+						<?php 
+							if(isset($_GET['result'])){
+								include 'inc/util.inc.php';
+								echo '<img src="data:image/png;base64,'.base64_url_decode($_GET['result']).'" />';
+							}else{
+								echo '<img src="img/sample.png" />';
+							}
+						 ?>
 					</div>
 				</div>
 			</div>
+		</form>
 		</div>
 	</div>
 
