@@ -44,7 +44,7 @@ public class BarcodesApi  {
         
         @io.swagger.annotations.ApiResponse(code = 404, message = "No barcodes found", response = Barcode.class, responseContainer = "List") })
 
-    public Response barcodesGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned barcodes") @QueryParam("date") String date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa", defaultValue="sha-256") @DefaultValue("sha-256") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode", allowableValues="qr_code, data_matrix, pdf_417", defaultValue="qr_code") @DefaultValue("qr_code") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext,@Context HttpServletRequest request)
+    public Response barcodesGet(@ApiParam(value = "Size of returned array") @QueryParam("size") Integer size,@ApiParam(value = "Date of returned barcodes") @QueryParam("date") String date,@ApiParam(value = "Encryption algorithm used", allowableValues="sha-256, aes, rsa") @QueryParam("algorithm") String algorithm,@ApiParam(value = "Type of barcode", allowableValues="qr_code, data_matrix, pdf_417") @QueryParam("barcode") String barcode,@Context SecurityContext securityContext,@Context HttpServletRequest request)
     throws NotFoundException {
         return delegate.barcodesGet(size,date,algorithm,barcode,securityContext,request);
     }

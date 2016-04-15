@@ -56,7 +56,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
     @Override
     public Response barcodesGet(Integer size, String date, String algorithm, String barcode, SecurityContext securityContext, HttpServletRequest request)
     throws NotFoundException {
-        
+
         long requestTime = System.currentTimeMillis();
         
         MongoClient mongoClient = new MongoClient("localhost", 27017);
@@ -84,20 +84,21 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         
         // If client defined an algorithm
         if(algorithm != null){
-            query.append("setting.algorithm",algorithm);
+            query.append("settings.algorithm",algorithm);
         }
         
         //If client defined a barcode type
         if(barcode != null){
-            query.append("setting.barcode.type", barcode);
+            query.append("settings.barcode.type", barcode);
         }
+        
         
         // If client defined an array size
         if(size != null && size > 0){
-            search = db.getCollection("barcodes").find(query).limit(size);
+            search = db.getCollection("barcodes").find(query).limit(size).sort(new Document("created_at",-1));
         }
         if(size == null){
-            search = db.getCollection("barcodes").find(query);
+            search = db.getCollection("barcodes").find(query).sort(new Document("created_at",-1));
         }
         
         // If search fails return 500 error
@@ -113,7 +114,7 @@ public class BarcodesApiServiceImpl extends BarcodesApiService {
         // Return query results
         logger.log(new ApiEvent("GET", request.getRequestURI(), new Date(requestTime), ApiEvent.OK, "OK", "Barcodes found", new Date(System.currentTimeMillis()), null));
         return Response.ok().entity(search).build();
-        
+
     }
     
     @Override

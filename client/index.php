@@ -1,11 +1,21 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-	<?php include 'inc/header.inc.php'; ?>	
+	<?php include 'inc/header.inc.php'; 
+		require __DIR__ . '/vendor/autoload.php';
+	?>	
 </head>
 <body>
 
-<?php include 'inc/navbar.inc.php'; ?>
+<?php include 'inc/navbar.inc.php'; 
+	if(isset($_GET['setting'])){
+		$uri = "http://localhost:8080/v1/settings/".$_GET['setting'];
+		$response = \Httpful\Request::get($uri)->send();
+		if(isset($response->body)){
+			$setting = $response->body;
+		}
+	}
+?>
 
 	<div class="container">
 		<div class="row">
@@ -27,6 +37,11 @@
 					<div class="col-lg-12">
 						<div class="well">
 							<h4>Parâmetros</h4>
+								<?php 
+									if(isset($_GET['error'])){
+										echo '<small style="color:red">Parametrização não disponível</small>';
+									}
+								?>
 								<div class="btn-group">
 									<button type="button" class="btn btn-default" name="code-select" onclick="select(this)" style="background-color:#337AB7;color:white">QR Code</button>
 									<button type="button" class="btn btn-default" name="code-select" onclick="select(this)">Data Matrix</button>
@@ -34,19 +49,43 @@
 								</div>
 								<br /><br />
 								<div>
-									<input type="hidden" value="qr_code" name="barcode-type" id="barcode-type" />
+									<?php 
+										if(isset($_GET['setting'])){
+											echo '<input type="hidden" value="'.$setting->barcode->type.'" name="barcode-type" id="barcode-type" />';
+										}else{
+											echo '<input type="hidden" value="qr_code" name="barcode-type" id="barcode-type" />';
+										}
+									 ?>
 									<table width="100%">
 										<tr>
 											<td><label>Largura (px):</label></td>
-											<td><input type="number" placeholder="150" class="form-control" name="width" /></td>
+											<?php 
+												if(isset($_GET['setting'])){
+													echo '<td><input type="number" placeholder="150" class="form-control" name="width" value="'.$setting->barcode->width.'" /></td>';
+												}else{
+													echo '<td><input type="number" placeholder="150" class="form-control" name="width" /></td>';
+												}
+											?>
 										</tr>
 										<tr>
 											<td><label>Altura (px):</label></td>
-											<td><input type="number" placeholder="150" class="form-control" name="height" /></td>
+											<?php 
+												if(isset($_GET['setting'])){
+													echo '<td><input type="number" placeholder="150" class="form-control" name="height" value="'.$setting->barcode->height.'" /></td>';
+												}else{
+													echo '<td><input type="number" placeholder="150" class="form-control" name="height" /></td>';
+												}
+											?>
 										</tr>
 										<tr>
 											<td><label>Margem (px):</label></td>
-											<td><input type="number" placeholder="3" class="form-control" name="margin" /></td>
+											<?php 
+												if(isset($_GET['setting'])){
+													echo '<td><input type="number" placeholder="150" class="form-control" name="margin" value="'.$setting->barcode->margin.'" /></td>';
+												}else{
+													echo '<td><input type="number" placeholder="150" class="form-control" name="margin" /></td>';
+												}
+											?>
 										</tr>
 									</table>
 									<div id="qr-code-params">
@@ -110,9 +149,9 @@
 						<?php 
 							if(isset($_GET['result'])){
 								include 'inc/util.inc.php';
-								echo '<img src="data:image/png;base64,'.base64_url_decode($_GET['result']).'" />';
+								echo '<img id="result" src="data:image/png;base64,'.base64_url_decode($_GET['result']).'" />';
 							}else{
-								echo '<img src="img/sample.png" />';
+								echo '<img id="result" src="img/sample.png" />';
 							}
 						 ?>
 					</div>

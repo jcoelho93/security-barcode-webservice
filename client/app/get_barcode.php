@@ -29,7 +29,12 @@
                 ->sendsJson()
                 ->body(json_encode($body))
                 ->send();
-        var_dump($response);
-		header('Location: ../index.php?result='.base64_url_encode($response->body->base64));
 
+        if(isset($response->body->base64)){
+			header('Location: ../index.php?result='.base64_url_encode($response->body->base64));
+		}else{
+			if(isset($response->body->message) && $response->body->message == "These settings are not available"){
+				header('Location: ../index.php?error=settings');
+			}
+		}
  ?>

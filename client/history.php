@@ -5,7 +5,10 @@
 </head>
 <body>
 
-	<?php include 'inc/navbar.inc.php'; ?>
+	<?php include 'inc/navbar.inc.php'; 
+		include 'inc/util.inc.php';
+		require __DIR__ . '/vendor/autoload.php';
+	?>
 
 	<div class="container">
 		<div class="row">
@@ -28,16 +31,28 @@
 			<div class="col-lg-3">
 				<div class="well">
 					<ul class="list-group">
-						<li class="list-group-item"><a href="#">QR Code | SHA-256 | 17-03-2016</a></li>
-						<li class="list-group-item"><a href="#">Data Matrix | SHA-256 | 12-03-2016</a></li>
-						<li class="list-group-item"><a href="#">QR Code | SHA-256 | 12-03-2016</a></li>
-						<li class="list-group-item"><a href="#">PDF417 | SHA-256 | 10-03-2016</a></li>
+						<?php 
+							$uri = "http://localhost:8080/v1/barcodes";
+							$response = \Httpful\Request::get($uri)->send();
+							$barcodes = $response->body;
+							foreach($barcodes as $barcode){
+								$id = mongo_id_to_hex($barcode->_id);
+								echo '<li class="list-group-item"><a href="?barcode='.$id.'">'.str_replace("_"," ",strtoupper($barcode->settings->barcode->type)).' | '.str_replace("_"," ",strtoupper($barcode->settings->algorithm)).' | '.$barcode->created_at.'</a></li>';
+							}
+						?>
 					</ul>
 				</div>
 			</div>
 			<div class="col-lg-4">
 				<div class="well">
-					
+					<?php 
+						if(isset($_GET['barcode'])){
+							$uri = "http://localhost:8080/v1/barcodes/".$_GET['barcode'];
+							$response = \Httpful\Request::get($uri)->send();
+							$base64 = $response->body->base64;
+							echo '<img src="data:image/png;base64,'.$base64.'" />';
+						}
+					 ?>
 				</div>
 			</div>
 			<div class="col-lg-4">

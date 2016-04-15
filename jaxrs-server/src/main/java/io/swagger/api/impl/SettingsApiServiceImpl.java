@@ -97,10 +97,10 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         
         // If client defined an array size
         if(size != null && size > 0){
-            search = db.getCollection("settings").find(query).limit(size);
+            search = db.getCollection("settings").find(query).limit(size).sort(new Document("created_at",-1));
         }
         if(size == null){
-            search = db.getCollection("settings").find(query);
+            search = db.getCollection("settings").find(query).sort(new Document("created_at",-1));
         }
         
         // If search fails return 500 error
@@ -259,7 +259,9 @@ public class SettingsApiServiceImpl extends SettingsApiService {
         MongoDatabase db = mongoClient.getDatabase("barcodes");
         MongoCollection coll = db.getCollection("settings");
         
-        Document query = new Document("_id", new ObjectId(settingId));
+        ObjectId objId = new ObjectId(settingId);
+        
+        Document query = new Document("_id", objId);
         
         FindIterable search = coll.find(query).limit(1);
         
