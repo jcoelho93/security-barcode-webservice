@@ -9,5 +9,5 @@
 ### Technical Requirements
 
     1. RESTful API
-    2. Documented using [swagger](http://swagger.io/)
+    2. Documented using http://swagger.io/
     3. Uses MongoDB.
